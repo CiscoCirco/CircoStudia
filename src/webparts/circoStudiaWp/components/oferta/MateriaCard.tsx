@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { Stack, Text, Icon } from '@fluentui/react';
 import OfertaDeMaterias from '../../../../core/entities/OfertaDeMaterias';
 import CursaEn from '../../../../core/entities/CursaEn';
 import Estudiante from '../../../../core/entities/Estudiante';
 import ComisionRow from './ComisionRow';
+import Icon from '../shared/Icon';
+import styles from '../CircoStudiaWp.module.scss';
 
 interface IMateriaCardProps {
   ofertas: OfertaDeMaterias[];
@@ -23,51 +24,56 @@ const MateriaCard: React.FC<IMateriaCardProps> = ({
 
   const materia = ofertas[0].materia;
   const anioLabel = materia.anio ? `${materia.anio}° año` : '';
-  const yaInscriptoEnAlguna = misCursas.some(c => ofertas.map(o => o.Id).includes(c.ofertaId));
+  const enMiInscripcion = misCursas.some(c => ofertas.map(o => o.Id).includes(c.ofertaId));
+
+  const totalColegas = ofertas.reduce((sum, o) => {
+    const count = todasLasCursas.filter(c => c.ofertaId === o.Id).length;
+    return sum + count;
+  }, 0);
+
+  const cls = [
+    styles.materiaGroup,
+    expanded ? styles.materiaGroupOpen : '',
+    enMiInscripcion ? styles.materiaGroupEnrolled : '',
+  ].filter(Boolean).join(' ');
+
+  const chevronCls = [styles.mgChevron, expanded ? styles.mgChevronOpen : ''].join(' ');
 
   return (
-    <Stack
-      styles={{
-        root: {
-          border: `1px solid ${yaInscriptoEnAlguna ? '#28a745' : '#ddd'}`,
-          borderRadius: 4,
-          marginBottom: 8,
-          overflow: 'hidden',
-          background: 'white',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
-        }
-      }}
-    >
-      <Stack
-        horizontal
-        verticalAlign="center"
-        tokens={{ childrenGap: 12, padding: '10px 16px' }}
-        styles={{ root: { cursor: 'pointer', userSelect: 'none', background: expanded ? '#f3f9ff' : 'white' } }}
-        onClick={() => setExpanded(prev => !prev)}
-      >
-        <Icon
-          iconName={expanded ? 'ChevronDown' : 'ChevronRight'}
-          styles={{ root: { color: '#0078d4', fontSize: 12 } }}
-        />
-        <Stack tokens={{ childrenGap: 2 }} grow>
-          <Stack horizontal tokens={{ childrenGap: 12 }} verticalAlign="center">
-            <Text variant="medium" styles={{ root: { fontWeight: 600 } }}>{materia.nombre}</Text>
-            {anioLabel && (
-              <Text variant="small" styles={{ root: { color: '#666', background: '#f0f0f0', padding: '1px 6px', borderRadius: 10 } }}>
-                {anioLabel}
-              </Text>
-            )}
-            {yaInscriptoEnAlguna && (
-              <Text variant="small" styles={{ root: { color: '#28a745', fontWeight: 600 } }}>✓ Inscripto</Text>
-            )}
-          </Stack>
-          <Text variant="small" styles={{ root: { color: '#888' } }}>
-            {materia.codMateria} — {ofertas.length} comisión{ofertas.length !== 1 ? 'es' : ''}
-          </Text>
-        </Stack>
-      </Stack>
+    <div className={cls}>
+      {/* Header */}
+      <div className={styles.mgHead} onClick={() => setExpanded(prev => !prev)}>
+        <div className={styles.mgCode}>#{materia.codMateria}</div>
+        <div>
+          <div className={styles.mgTitle}>{materia.nombre}</div>
+          <div className={styles.mgTitleSub}>
+            {anioLabel && `${anioLabel} · `}
+            {ofertas.length} {ofertas.length === 1 ? 'comisión' : 'comisiones'}
+            {totalColegas > 0 && ` · ${totalColegas} colega${totalColegas !== 1 ? 's' : ''} inscripto${totalColegas !== 1 ? 's' : ''}`}
+          </div>
+        </div>
+        <div className={styles.mgChips}>
+          {/* Carrera chip if available — shown as year chip */}
+          {anioLabel && (
+            <span className={styles.chip}>{anioLabel}</span>
+          )}
+        </div>
+        <div>
+          {enMiInscripcion && (
+            <span className={`${styles.chip} ${styles.chipMatch}`}>
+              <Icon name="check" size={10} />
+              En tu inscripción
+            </span>
+          )}
+        </div>
+        <div className={chevronCls}>
+          <Icon name="chevronRight" size={18} />
+        </div>
+      </div>
+
+      {/* Body */}
       {expanded && (
-        <Stack styles={{ root: { padding: '8px 16px 12px 28px', borderTop: '1px solid #eee' } }}>
+        <div className={styles.mgBody}>
           {ofertas.map(oferta => (
             <ComisionRow
               key={oferta.Id}
@@ -80,9 +86,9 @@ const MateriaCard: React.FC<IMateriaCardProps> = ({
               onInscribirse={onInscribirse}
             />
           ))}
-        </Stack>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 };
 

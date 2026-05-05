@@ -1,0 +1,131 @@
+.webPartContainer > div:first-child
+> div:nth-child(2)
+> div {
+  display: none !important;
+}
+
+#spSiteHeader div[class^="sideActionsWrapper-"] {
+  display: none !important;
+}
+
+div[class^="commandBarWrapper"] {
+  display: none !important;
+}
+
+#spCommandBar {
+  display: none !important;
+}
+
+#spSiteHeader div[class^="actionsSubcell-"] {
+  display: none !important;
+}
+
+#spSiteHeader div[class^="searchCell-"] {
+  display: none !important;
+}
+
+#spSiteHeader div[class^="searchBoxContainer"] {
+  display: none !important;
+}
+
+#spSiteHeader button[class^="chevronButton-"] {
+  display: none !important;
+}
+
+#spSiteHeader .navArbol button::after {
+  display: none;
+}
+
+#spSiteHeader div[class^="logoCell-"] {
+  display: none !important;
+}
+
+#RecommendedItems {
+  display: none;
+}
+
+#spSiteHeader
+  span[class^="ms-HorizontalNavItem"]
+  > a[title="Papelera de reciclaje"] {
+  display: none !important;
+}
+
+#spSiteHeader .ms-HorizontalNavItems > div {
+  display: none !important;
+}
+
+#spSiteHeader button[class^="editButton-"] {
+  display: none !important;
+}
+
+div[id^="sp-appBar"] {
+  display: none !important;
+}
+
+.spAppAndPropertyPanelContainer > div:first-child {
+  display: none !important;
+}
+
+.spAppAndPropertyPanelContainer > div:first-child > #sp-appBar {
+  display: none !important;
+}
+
+#spSiteHeader
+  > div:first-child
+  > div:nth-child(2)
+  > div:first-child
+  > div:first-child {
+  display: none !important;
+}
+
+#spLeftNav {
+  display: none !important;
+}
+
+#CommentsWrapper {
+  display: none;
+}
+
+#RecommendedItems {
+  display: none !important;
+}
+
+#spSiteHeader div[class^="headerRow"] {
+  display: none !important;
+}
+
+div[id^="centerRegion"] div {
+  display: none !important;
+}
+
+button {
+  border: 0px !important;
+}
+
+div[class^="sideActionsWrapper-"] {
+  display: none !important;
+}
+
+div[class^="commandBarWrapper"] {
+  display: none !important;
+}
+
+div[class^="actionsSubcell-"] {
+  display: none !important;
+}
+
+div[class^="searchCell-"] {
+  display: none !important;
+}
+
+div[class^="searchBoxContainer"] {
+  display: none !important;
+}
+
+button[class^="chevronButton-"] {
+  display: none !important;
+}
+
+.navArbol button::after {
+  display: none;
+}

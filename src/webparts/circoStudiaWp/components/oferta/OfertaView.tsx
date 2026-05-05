@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Stack, Text, Spinner, SpinnerSize, MessageBar, MessageBarType, DefaultButton, SearchBox } from '@fluentui/react';
+import { Spinner, SpinnerSize, MessageBar, MessageBarType } from '@fluentui/react';
 import NoOfertaActiva from '../noOfertaActiva/NoOfertaActiva';
 import { useUser } from '../../contexts/UserContext';
 import { CUATRIMESTRE_ACTUAL } from '../../../../core/utils/Constants';
@@ -14,12 +13,12 @@ import CursaEnDatasource from '../../../../core/api/cursaEn/CursaEnDatasource';
 import CarreraDatasource from '../../../../core/api/carrera/CarreraDatasource';
 import MateriaCarreraDatasource from '../../../../core/api/materiaCarrera/MateriaCarreraDatasource';
 import EstudianteDatasource from '../../../../core/api/estudiante/EstudianteDatasource';
-import FiltroCarrera from './FiltroCarrera';
-import MateriaCard from './MateriaCard';
 import MateriaCarrera from '../../../../core/entities/MateriaCarrera';
+import MateriaCard from './MateriaCard';
+import Icon from '../shared/Icon';
+import styles from '../CircoStudiaWp.module.scss';
 
 const OfertaView: React.FC = () => {
-  const navigate = useNavigate();
   const { estudianteActual, isInitialLoading: userLoading } = useUser();
 
   const [ofertaMaterias, setOfertaMaterias] = useState<OfertaDeMaterias[]>([]);
@@ -29,6 +28,8 @@ const OfertaView: React.FC = () => {
   const [materiaCarreras, setMateriaCarreras] = useState<MateriaCarrera[]>([]);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [carreraSeleccionada, setCarreraSeleccionada] = useState<number | null>(null);
+  const [filtroTurno, setFiltroTurno] = useState('all');
+  const [filtroModalidad, setFiltroModalidad] = useState('all');
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,37 +45,30 @@ const OfertaView: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-
       const [ofertas, todasCursas, mis, cars, matCars, ests] = await Promise.all([
         ofertaDS.getByCuatrimestre(CUATRIMESTRE_ACTUAL),
         cursaEnDS.getAllFlat(),
         estudianteActual ? cursaEnDS.getByEstudianteId(estudianteActual.Id) : Promise.resolve([]),
         carreraDS.getItems(),
         materiaCarreraDS.getItems(),
-        estudianteDS.getItems()
+        estudianteDS.getItems(),
       ]);
-
-      // Filter todasCursas to only those belonging to current cuatrimestre offerings
       const ofertaIds = new Set(ofertas.map(o => o.Id));
-      const cursasDeEsteC = todasCursas.filter(c => ofertaIds.has(c.ofertaId));
-
       setOfertaMaterias(ofertas);
-      setTodasLasCursas(cursasDeEsteC);
+      setTodasLasCursas(todasCursas.filter(c => ofertaIds.has(c.ofertaId)));
       setMisCursas(mis);
       setCarreras(cars);
       setMateriaCarreras(matCars);
       setEstudiantes(ests);
     } catch (err) {
-      console.error('[OfertaView] Error al cargar datos:', err);
+      console.error('[OfertaView] Error:', err);
       setError('Error al cargar la oferta. Intentá de nuevo.');
     } finally {
       setLoading(false);
     }
   }, [userLoading, estudianteActual]);
 
-  useEffect(() => {
-    loadData().catch(console.error);
-  }, [loadData]);
+  useEffect(() => { loadData().catch(console.error); }, [loadData]);
 
   const handleInscribirse = async (oferta: OfertaDeMaterias): Promise<void> => {
     if (!estudianteActual) return;
@@ -84,7 +78,7 @@ const OfertaView: React.FC = () => {
     setTodasLasCursas(prev => [...prev, result]);
   };
 
-  // Group ofertas by materiaId → array of [materiaId, OfertaDeMaterias[]]
+  // Group ofertas by materiaId
   const materiaEntries = React.useMemo((): Array<[number, OfertaDeMaterias[]]> => {
     const map: Record<number, OfertaDeMaterias[]> = {};
     ofertaMaterias.forEach(o => {
@@ -95,7 +89,6 @@ const OfertaView: React.FC = () => {
     return Object.keys(map).map(k => [Number(k), map[Number(k)]]);
   }, [ofertaMaterias]);
 
-  // Get materia IDs for selected carrera
   const materiaIdsFiltrados = React.useMemo((): number[] | null => {
     if (carreraSeleccionada === null) return null;
     return materiaCarreras
@@ -103,29 +96,37 @@ const OfertaView: React.FC = () => {
       .map(mc => mc.materiaId);
   }, [carreraSeleccionada, materiaCarreras]);
 
-  // Apply filters
   const materiasAMostrar = React.useMemo((): Array<[number, OfertaDeMaterias[]]> => {
-    return materiaEntries.filter(([materiaId, ofertas]) => {
-      if (materiaIdsFiltrados !== null && !materiaIdsFiltrados.includes(materiaId)) return false;
-      if (busqueda.trim()) {
-        const q = busqueda.toLowerCase();
-        const m = ofertas[0].materia;
-        return m.nombre.toLowerCase().includes(q) || m.codMateria.toLowerCase().includes(q);
-      }
-      return true;
-    }).sort((a, b) => {
-      const anioA = a[1][0].materia.anio || 99;
-      const anioB = b[1][0].materia.anio || 99;
-      if (anioA !== anioB) return anioA - anioB;
-      return (a[1][0].materia.codMateria || '').localeCompare(b[1][0].materia.codMateria || '');
-    });
+    return materiaEntries
+      .filter(([materiaId, ofertas]) => {
+        if (materiaIdsFiltrados !== null && !materiaIdsFiltrados.includes(materiaId)) return false;
+        if (busqueda.trim()) {
+          const q = busqueda.toLowerCase();
+          const m = ofertas[0].materia;
+          if (!m.nombre.toLowerCase().includes(q) && !m.codMateria.toLowerCase().includes(q)) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const anioA = a[1][0].materia.anio || 99;
+        const anioB = b[1][0].materia.anio || 99;
+        if (anioA !== anioB) return anioA - anioB;
+        return (a[1][0].materia.codMateria || '').localeCompare(b[1][0].materia.codMateria || '');
+      });
   }, [materiaEntries, materiaIdsFiltrados, busqueda]);
+
+  // Count for each carrera tab
+  const countAll = materiaEntries.length;
+  const countByCarrera = (carreraId: number): number => {
+    const ids = materiaCarreras.filter(mc => mc.carreraId === carreraId).map(mc => mc.materiaId);
+    return materiaEntries.filter(([mid]) => ids.includes(mid)).length;
+  };
 
   if (loading) {
     return (
-      <Stack horizontalAlign="center" verticalAlign="center" styles={{ root: { height: 200 } }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
         <Spinner size={SpinnerSize.large} label="Cargando oferta de materias..." />
-      </Stack>
+      </div>
     );
   }
 
@@ -134,55 +135,119 @@ const OfertaView: React.FC = () => {
   }
 
   return (
-    <Stack tokens={{ padding: 24, childrenGap: 16 }}>
-      <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 12 }}>
-        <DefaultButton iconProps={{ iconName: 'Back' }} text="Inicio" onClick={() => navigate('/')} />
-        <Text variant="xLarge">Oferta de Materias — {CUATRIMESTRE_ACTUAL}° Cuatrimestre</Text>
-      </Stack>
+    <>
+      <div className={styles.pageHead}>
+        <h1 className={styles.pageTitle}>Oferta de materias</h1>
+        <p className={styles.pageSub}>
+          {CUATRIMESTRE_ACTUAL}° Cuatrimestre 2025 · Elegí carrera, filtrá por año y turno, y revisá comisiones.
+        </p>
+      </div>
 
       {error && (
-        <MessageBar messageBarType={MessageBarType.error} onDismiss={() => setError(null)}>
+        <MessageBar messageBarType={MessageBarType.error} onDismiss={() => setError(null)} style={{ marginBottom: 16 }}>
           {error}
         </MessageBar>
       )}
 
-      <FiltroCarrera
-        carreras={carreras}
-        carreraSeleccionada={carreraSeleccionada}
-        onCarreraChange={setCarreraSeleccionada}
-      />
+      {/* Tabs + search */}
+      <div className={styles.toolbar}>
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${carreraSeleccionada === null ? styles.tabActive : ''}`}
+            onClick={() => setCarreraSeleccionada(null)}
+          >
+            Todas
+            <span className={styles.tabCount}>{countAll}</span>
+          </button>
+          {carreras.map(c => (
+            <button
+              key={c.Id}
+              className={`${styles.tab} ${carreraSeleccionada === c.Id ? styles.tabActive : ''}`}
+              onClick={() => setCarreraSeleccionada(c.Id)}
+            >
+              {c.nombre || c.codCarrera}
+              <span className={styles.tabCount}>{countByCarrera(c.Id)}</span>
+            </button>
+          ))}
+        </div>
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 12, color: '#5B6B82' }}>
+          {materiasAMostrar.length} materia{materiasAMostrar.length !== 1 ? 's' : ''}
+          {misCursas.length > 0 && ` · ${misCursas.length} inscripta${misCursas.length !== 1 ? 's' : ''}`}
+        </span>
+      </div>
 
-      <SearchBox
-        placeholder="Buscar por nombre o código de materia..."
-        value={busqueda}
-        onChange={(_, v) => setBusqueda(v || '')}
-        styles={{ root: { maxWidth: 400 } }}
-      />
+      {/* Filter bar */}
+      <div className={styles.filterBar}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px', borderRight: '1px solid #E6EAF0' }}>
+          <Icon name="filter" size={14} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#5B6B82' }}>Filtros</span>
+        </div>
+        <select
+          className={styles.select}
+          value={filtroTurno}
+          onChange={e => setFiltroTurno(e.target.value)}
+        >
+          <option value="all">Todos los turnos</option>
+          <option value="M">Mañana</option>
+          <option value="T">Tarde</option>
+          <option value="N">Noche</option>
+        </select>
+        <select
+          className={styles.select}
+          value={filtroModalidad}
+          onChange={e => setFiltroModalidad(e.target.value)}
+        >
+          <option value="all">Toda modalidad</option>
+          <option value="Presencial">Presencial</option>
+          <option value="Virtual">Virtual</option>
+          <option value="Híbrida">Híbrida</option>
+          <option value="Semipresencial">Semipresencial</option>
+        </select>
+        <div style={{ flex: 1 }} />
+        <input
+          className={styles.input}
+          placeholder="Buscar materia o código…"
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          style={{ minWidth: 220 }}
+        />
+      </div>
 
-      <Text variant="small" styles={{ root: { color: '#666' } }}>
-        {materiasAMostrar.length} materia{materiasAMostrar.length !== 1 ? 's' : ''} encontrada{materiasAMostrar.length !== 1 ? 's' : ''}
-        {misCursas.length > 0 && ` · ${misCursas.length} inscripción${misCursas.length !== 1 ? 'es' : ''} activa${misCursas.length !== 1 ? 's' : ''}`}
-      </Text>
-
-      <Stack>
-        {materiasAMostrar.map(([materiaId, ofertas]) => (
-          <MateriaCard
-            key={materiaId}
-            ofertas={ofertas}
-            misCursas={misCursas}
-            todasLasCursas={todasLasCursas}
-            estudianteActual={estudianteActual}
-            estudiantes={estudiantes}
-            onInscribirse={handleInscribirse}
-          />
-        ))}
-        {materiasAMostrar.length === 0 && (busqueda.trim() || carreraSeleccionada !== null) && (
-          <Text styles={{ root: { color: '#888', textAlign: 'center', paddingTop: 32 } }}>
-            No hay materias que coincidan con el filtro.
-          </Text>
+      {/* Materia groups */}
+      <div>
+        {materiasAMostrar.length === 0 ? (
+          <div className={styles.card}>
+            <div className={styles.cardBody}>
+              <div className={styles.empty}>
+                <div className={styles.emptyIcon}>🔍</div>
+                No hay materias que coincidan con los filtros.
+              </div>
+            </div>
+          </div>
+        ) : (
+          materiasAMostrar.map(([materiaId, ofertas]) => {
+            const filteredOfertas = ofertas.filter(o => {
+              if (filtroTurno !== 'all' && o.comision.turno !== filtroTurno) return false;
+              if (filtroModalidad !== 'all' && o.modalidad !== filtroModalidad) return false;
+              return true;
+            });
+            if (filteredOfertas.length === 0) return null;
+            return (
+              <MateriaCard
+                key={materiaId}
+                ofertas={filteredOfertas}
+                misCursas={misCursas}
+                todasLasCursas={todasLasCursas}
+                estudianteActual={estudianteActual}
+                estudiantes={estudiantes}
+                onInscribirse={handleInscribirse}
+              />
+            );
+          })
         )}
-      </Stack>
-    </Stack>
+      </div>
+    </>
   );
 };
 

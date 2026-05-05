@@ -15,6 +15,10 @@ import GestionOferta from './admin/gestionOferta/GestionOferta';
 import ImportarOferta from './admin/importarOferta/ImportarOferta';
 import ReporteInscriptos from './admin/reporteInscriptos/ReporteInscriptos';
 import SinPerfil from './sinPerfil/SinPerfil';
+import Coincidencias from './coincidencias/Coincidencias';
+import Perfil from './perfil/Perfil';
+import AppLayout from './layout/AppLayout';
+import styles from './CircoStudiaWp.module.scss';
 
 const AppGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { estudianteActual, isInitialLoading, error } = useUser();
@@ -44,26 +48,32 @@ const AppGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const CircoStudiaWP: React.FC<ICircoStudiaWPProps> = () => {
   return (
-    <LoadingProvider>
-      <MessageProvider>
-        <UserProvider>
-          <HashRouter>
-            <AppGuard>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/oferta" element={<OfertaView />} />
-                <Route path="/mis-inscripciones" element={<MisInscripciones />} />
-                <Route path="/admin" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
-                <Route path="/admin/oferta" element={<ProtectedRoute><GestionOferta /></ProtectedRoute>} />
-                <Route path="/admin/importar" element={<ProtectedRoute><ImportarOferta /></ProtectedRoute>} />
-                <Route path="/admin/reporte" element={<ProtectedRoute><ReporteInscriptos /></ProtectedRoute>} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </AppGuard>
-          </HashRouter>
-        </UserProvider>
-      </MessageProvider>
-    </LoadingProvider>
+    <div className={styles.circoStudiaWp}>
+      <LoadingProvider>
+        <MessageProvider>
+          <UserProvider>
+            <HashRouter>
+              <AppGuard>
+                <AppLayout>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/oferta" element={<OfertaView />} />
+                    <Route path="/mis-inscripciones" element={<MisInscripciones />} />
+                    <Route path="/coincidencias" element={<Coincidencias />} />
+                    <Route path="/perfil" element={<Perfil />} />
+                    <Route path="/admin" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
+                    <Route path="/admin/oferta" element={<ProtectedRoute><GestionOferta /></ProtectedRoute>} />
+                    <Route path="/admin/importar" element={<ProtectedRoute><ImportarOferta /></ProtectedRoute>} />
+                    <Route path="/admin/reporte" element={<ProtectedRoute><ReporteInscriptos /></ProtectedRoute>} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </AppLayout>
+              </AppGuard>
+            </HashRouter>
+          </UserProvider>
+        </MessageProvider>
+      </LoadingProvider>
+    </div>
   );
 };
 

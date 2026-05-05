@@ -1,3 +1,6 @@
+require("../../core/ui/css/fix.css");
+require("../../core/ui/css/formatWorkbench.css");
+
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
