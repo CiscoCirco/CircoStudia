@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "whichFolder": "subdir",
+    "solutionName": "circo-studia",
+    "environment": "spo",
+    "skipFeatureDeployment": true,
+    "componentType": "webpart",
+    "template": "react",
+    "componentName": "CircoStudiaWP",
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "18.18.0",
+    "sdksVersions": {},
+    "version": "1.21.1",
+    "libraryName": "circo-studia",
+    "libraryId": "03ec7579-0bc0-48b7-a450-df8912a695bd",
+    "packageManager": "npm",
+    "solutionShortDescription": "circo-studia description",
+    "isDomainIsolated": false
+  }
+}

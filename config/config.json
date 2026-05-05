@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "circo-studia-wp-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/circoStudiaWP/CircoStudiaWPWebPart.js",
+          "manifest": "./src/webparts/circoStudiaWP/CircoStudiaWPWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "CircoStudiaWPWebPartStrings": "lib/webparts/circoStudiaWP/loc/{locale}.js"
+  }
+}

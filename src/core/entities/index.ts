@@ -1,0 +1,15 @@
+export { default as BaseEntity } from './BaseEntity';
+export { default as ILookupField } from './ILookupField';
+export { default as User } from './User';
+export { default as Carrera } from './Carrera';
+export { default as Materia } from './Materia';
+export { default as Comision } from './Comision';
+export { default as OfertaDeMaterias } from './OfertaDeMaterias';
+export { default as Estudiante } from './Estudiante';
+export { default as Inscripto } from './Inscripto';
+export { default as CursaEn } from './CursaEn';
+export { default as Estado } from './Estado';
+export { default as AsignadoA } from './AsignadoA';
+export { default as RolItem } from './RolItem';
+export { default as MateriaCarrera } from './MateriaCarrera';
+export { default as Correlativa } from './Correlativa';

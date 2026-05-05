@@ -1,0 +1,22 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "c10e3d54-9a8d-4150-9c27-3e677cd06bd0",
+  "alias": "CircoStudiaWPWebPart",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "SharePointFullPage"],
+  "supportsThemeVariants": true,
+
+  "preconfiguredEntries": [{
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+    "group": { "default": "Advanced" },
+    "title": { "default": "CircoStudiaWP" },
+    "description": { "default": "CircoStudia - Gestión de inscripciones universitarias" },
+    "officeFabricIconFontName": "Education",
+    "properties": {}
+  }]
+}
